@@ -4,12 +4,51 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  // ---------- Navbar Scroll Effect ----------
+  // ---------- Welcome Banner ----------
+  const banner = document.getElementById('welcomeBanner');
+  const closeBannerBtn = document.getElementById('closeBanner');
   const navbar = document.getElementById('navbar');
+
+  if (closeBannerBtn && banner) {
+    closeBannerBtn.addEventListener('click', () => {
+      banner.classList.add('hidden');
+      navbar.classList.add('banner-hidden');
+      document.documentElement.style.setProperty('--banner-height', '0px');
+    });
+  }
+
+  // ---------- Navbar: Scroll Effect + Hide/Show (Nexo-style) ----------
+  let lastScrollY = 0;
+  let ticking = false;
+
   const handleScroll = () => {
-    navbar.classList.toggle('scrolled', window.scrollY > 50);
+    const currentScrollY = window.scrollY;
+
+    // Glassmorphism on scroll
+    navbar.classList.toggle('scrolled', currentScrollY > 50);
+
+    // Hide/show on scroll direction (only after scrolling past hero)
+    if (currentScrollY > 400) {
+      if (currentScrollY > lastScrollY + 5) {
+        navbar.classList.add('nav-hidden');
+      } else if (currentScrollY < lastScrollY - 5) {
+        navbar.classList.remove('nav-hidden');
+      }
+    } else {
+      navbar.classList.remove('nav-hidden');
+    }
+
+    lastScrollY = currentScrollY;
+    ticking = false;
   };
-  window.addEventListener('scroll', handleScroll, { passive: true });
+
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      requestAnimationFrame(handleScroll);
+      ticking = true;
+    }
+  }, { passive: true });
+
   handleScroll();
 
   // ---------- Mobile Menu ----------
@@ -24,7 +63,6 @@ document.addEventListener('DOMContentLoaded', () => {
       document.body.style.overflow = isOpen ? 'hidden' : '';
     });
 
-    // Close menu on link click
     navMenu.querySelectorAll('a').forEach(link => {
       link.addEventListener('click', () => {
         navMenu.classList.remove('open');
@@ -35,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ---------- Intersection Observer (Reveal Animations) ----------
+  // ---------- Intersection Observer (Reveal + Stagger Animations) ----------
   const revealElements = document.querySelectorAll('.reveal');
 
   if ('IntersectionObserver' in window) {
@@ -53,7 +91,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     revealElements.forEach(el => observer.observe(el));
   } else {
-    // Fallback: show all elements
     revealElements.forEach(el => el.classList.add('revealed'));
   }
 
@@ -65,7 +102,6 @@ document.addEventListener('DOMContentLoaded', () => {
     button.addEventListener('click', () => {
       const targetTab = button.dataset.tab;
 
-      // Update buttons
       tabButtons.forEach(btn => {
         btn.classList.remove('tabs__tab--active');
         btn.setAttribute('aria-selected', 'false');
@@ -73,7 +109,6 @@ document.addEventListener('DOMContentLoaded', () => {
       button.classList.add('tabs__tab--active');
       button.setAttribute('aria-selected', 'true');
 
-      // Update panels
       tabPanels.forEach(panel => {
         const isTarget = panel.id === `panel-${targetTab}`;
         panel.classList.toggle('tabs__panel--active', isTarget);
@@ -90,7 +125,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const content = trigger.nextElementSibling;
       const isExpanded = trigger.getAttribute('aria-expanded') === 'true';
 
-      // Close all others
       accordionTriggers.forEach(other => {
         if (other !== trigger) {
           other.setAttribute('aria-expanded', 'false');
@@ -98,7 +132,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
 
-      // Toggle current
       trigger.setAttribute('aria-expanded', !isExpanded);
       content.hidden = isExpanded;
     });
@@ -110,7 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const nextBtn = document.getElementById('nextTestimonial');
 
   if (track && prevBtn && nextBtn) {
-    const scrollAmount = 364; // card width + gap
+    const scrollAmount = 364;
 
     prevBtn.addEventListener('click', () => {
       track.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
@@ -121,32 +154,102 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ---------- Ticker Pause on Hover ----------
-  const tickerRows = document.querySelectorAll('.ticker-row');
-  tickerRows.forEach(row => {
-    row.addEventListener('mouseenter', () => {
-      row.querySelector('.ticker-track').style.animationPlayState = 'paused';
-    });
-    row.addEventListener('mouseleave', () => {
-      row.querySelector('.ticker-track').style.animationPlayState = 'running';
+  // ---------- Ticker & Carousel Pause on Hover ----------
+  document.querySelectorAll('.ticker-row').forEach(row => {
+    const trackEl = row.querySelector('.ticker-track');
+    row.addEventListener('mouseenter', () => { trackEl.style.animationPlayState = 'paused'; });
+    row.addEventListener('mouseleave', () => { trackEl.style.animationPlayState = 'running'; });
+  });
+
+  const yieldCarousel = document.getElementById('yieldCarousel');
+  if (yieldCarousel) {
+    yieldCarousel.addEventListener('mouseenter', () => { yieldCarousel.style.animationPlayState = 'paused'; });
+    yieldCarousel.addEventListener('mouseleave', () => { yieldCarousel.style.animationPlayState = 'running'; });
+  }
+
+  // ---------- Calculator (Buenbit-inspired) ----------
+  const calcAmount = document.getElementById('calcAmount');
+  const calcInitial = document.getElementById('calcInitial');
+  const calcApr = document.getElementById('calcApr');
+  const calcTotal = document.getElementById('calcTotal');
+  const calcGain = document.getElementById('calcGain');
+
+  let selectedApr = 4;
+  let selectedYears = 1;
+
+  function parseAmount(str) {
+    return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0;
+  }
+
+  function formatBRL(value) {
+    return 'R$ ' + value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function updateCalculator() {
+    if (!calcAmount) return;
+    const amount = parseAmount(calcAmount.value);
+    const rate = selectedApr / 100;
+    const total = amount * Math.pow(1 + rate, selectedYears);
+    const gain = total - amount;
+
+    if (calcInitial) calcInitial.textContent = formatBRL(amount);
+    if (calcApr) calcApr.textContent = selectedApr.toFixed(1) + '% a.a.';
+    if (calcTotal) calcTotal.textContent = formatBRL(total);
+    if (calcGain) calcGain.textContent = '+ ' + formatBRL(gain);
+  }
+
+  // Asset selection
+  document.querySelectorAll('.calculator__asset').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.calculator__asset').forEach(b => {
+        b.classList.remove('calculator__asset--active');
+        b.setAttribute('aria-checked', 'false');
+      });
+      btn.classList.add('calculator__asset--active');
+      btn.setAttribute('aria-checked', 'true');
+      selectedApr = parseFloat(btn.dataset.apr);
+      updateCalculator();
     });
   });
 
-  // ---------- Yield Carousel Pause on Hover ----------
-  const yieldCarousel = document.getElementById('yieldCarousel');
-  if (yieldCarousel) {
-    yieldCarousel.addEventListener('mouseenter', () => {
-      yieldCarousel.style.animationPlayState = 'paused';
+  // Period selection
+  document.querySelectorAll('.calculator__period').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.calculator__period').forEach(b => {
+        b.classList.remove('calculator__period--active');
+        b.setAttribute('aria-checked', 'false');
+      });
+      btn.classList.add('calculator__period--active');
+      btn.setAttribute('aria-checked', 'true');
+      selectedYears = parseInt(btn.dataset.years);
+      updateCalculator();
     });
-    yieldCarousel.addEventListener('mouseleave', () => {
-      yieldCarousel.style.animationPlayState = 'running';
+  });
+
+  // Amount input
+  if (calcAmount) {
+    calcAmount.addEventListener('input', () => {
+      updateCalculator();
+    });
+
+    // Format on blur
+    calcAmount.addEventListener('blur', () => {
+      const val = parseAmount(calcAmount.value);
+      if (val > 0) {
+        calcAmount.value = val.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+      }
     });
   }
+
+  // Initial calculation
+  updateCalculator();
 
   // ---------- Smooth Scroll for Anchor Links ----------
   document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', (e) => {
-      const target = document.querySelector(anchor.getAttribute('href'));
+      const href = anchor.getAttribute('href');
+      if (href === '#') return;
+      const target = document.querySelector(href);
       if (target) {
         e.preventDefault();
         const offset = navbar.offsetHeight + 20;
@@ -162,8 +265,8 @@ document.addEventListener('DOMContentLoaded', () => {
     tabList.addEventListener('keydown', (e) => {
       const tabs = Array.from(tabList.querySelectorAll('.tabs__tab'));
       const currentIndex = tabs.indexOf(document.activeElement);
-
       let newIndex;
+
       if (e.key === 'ArrowRight') {
         newIndex = (currentIndex + 1) % tabs.length;
       } else if (e.key === 'ArrowLeft') {
