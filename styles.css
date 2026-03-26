@@ -108,6 +108,8 @@ select { font-family: inherit; }
 .section--mint { background: var(--color-mint); }
 .section--olive { background: var(--color-olive); }
 .section--black { background: var(--color-black); overflow: hidden; }
+.section--compact { padding: 64px 0; }
+.section--compact .section__header { margin-bottom: 32px; }
 
 /* Warm dark — Nexo-inspired warm undertone */
 .section--warm-dark {
@@ -1101,7 +1103,21 @@ select { font-family: inherit; }
 .steps-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 24px;
+  gap: 32px;
+  position: relative;
+}
+
+/* Connector line between steps */
+.steps-grid::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  background: linear-gradient(90deg, var(--color-primary), rgba(0, 212, 170, 0.2));
+  z-index: 0;
+  transform: translateY(-50%);
 }
 
 .step-card {
@@ -1109,8 +1125,9 @@ select { font-family: inherit; }
   padding: 32px 20px;
   border-radius: var(--radius-lg);
   position: relative;
-  background: var(--color-bg);
-  border: 1px solid rgba(27, 67, 50, 0.06);
+  z-index: 1;
+  background: var(--color-white);
+  border: 1px solid rgba(27, 67, 50, 0.08);
   transition: all var(--transition-base);
 }
 
@@ -1186,23 +1203,29 @@ select { font-family: inherit; }
 /* Featured PIX card */
 .deposit-card--featured {
   border: 2px solid var(--color-primary);
-  box-shadow: 0 0 0 4px rgba(0, 212, 170, 0.1);
+  box-shadow: 0 0 0 6px rgba(0, 212, 170, 0.1), 0 12px 32px rgba(0, 212, 170, 0.12);
+  transform: scale(1.03);
+}
+
+.deposit-card--featured:hover {
+  transform: scale(1.03) translateY(-4px);
 }
 
 .deposit-card__badge-pix {
   position: absolute;
-  top: -12px;
+  top: -14px;
   left: 50%;
   transform: translateX(-50%);
   background: var(--color-primary);
   color: var(--color-dark-green);
-  font-size: 0.7rem;
-  font-weight: 700;
-  padding: 4px 16px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 6px 20px;
   border-radius: var(--radius-full);
   white-space: nowrap;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  box-shadow: 0 4px 12px rgba(0, 212, 170, 0.3);
 }
 
 .deposit-card__icon {
@@ -1312,12 +1335,13 @@ select { font-family: inherit; }
 }
 
 .premium-card {
-  background: hsla(0, 0%, 100%, 0.04);
+  background: hsla(0, 0%, 100%, 0.05);
   border: 1px solid hsla(0, 0%, 100%, 0.1);
   border-radius: var(--radius-xl);
-  padding: 48px 40px;
+  padding: 40px 36px;
   color: white;
   transition: all var(--transition-base);
+  backdrop-filter: blur(4px);
 }
 
 .premium-card:hover {
@@ -1394,32 +1418,38 @@ select { font-family: inherit; }
 
 .why-card {
   text-align: center;
-  padding: 32px 24px;
+  padding: 24px 20px;
   border-radius: var(--radius-lg);
   transition: all var(--transition-base);
+  background: var(--color-bg);
+  border: 1px solid rgba(27, 67, 50, 0.04);
 }
 
-.why-card:hover { background: var(--color-bg); }
+.why-card:hover {
+  background: var(--color-white);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
 
 .why-card__icon {
-  width: 56px;
-  height: 56px;
+  width: 48px;
+  height: 48px;
   background: rgba(0, 212, 170, 0.1);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 16px;
+  margin: 0 auto 12px;
 }
 
 .why-card__title {
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 700;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .why-card__desc {
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   color: #5a6b5e;
   line-height: 1.5;
 }
@@ -1543,20 +1573,23 @@ select { font-family: inherit; }
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 48px;
+  gap: 40px;
   flex-wrap: wrap;
+  padding: 20px 0;
+  border-top: 1px solid rgba(27, 67, 50, 0.06);
+  border-bottom: 1px solid rgba(27, 67, 50, 0.06);
 }
 
 .press-logo {
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   font-weight: 800;
   color: var(--color-dark-green);
-  opacity: 0.2;
+  opacity: 0.45;
   transition: opacity var(--transition-base);
   letter-spacing: -0.5px;
 }
 
-.press-logo:hover { opacity: 0.5; }
+.press-logo:hover { opacity: 0.8; }
 
 /* ============================================
    AWARDS
